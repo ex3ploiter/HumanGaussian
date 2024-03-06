@@ -5,6 +5,7 @@ plyfile
 smplx
 lightning
 omegaconf
+wheel
 jaxtyping
 typeguard
 ./gaussiansplatting/submodules/simple-knn
