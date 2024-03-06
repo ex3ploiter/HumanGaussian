@@ -52,12 +52,12 @@ system:
   apose: true
   bg_white: false
 
-  prompt_processor_type: "texture-structure-prompt-processor"
-  prompt_processor:
-    use_perp_neg: false
-    pretrained_model_name_or_path: "stabilityai/stable-diffusion-2-base"
-    negative_prompt: "shadow, dark face, colorful hands, eyeglass, glasses, (deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck"
-    prompt: ???
+  # prompt_processor_type: "texture-structure-prompt-processor"
+  # prompt_processor:
+  #   use_perp_neg: false
+  #   pretrained_model_name_or_path: "stabilityai/stable-diffusion-2-base"
+  #   negative_prompt: "shadow, dark face, colorful hands, eyeglass, glasses, (deformed iris, deformed pupils, semi-realistic, cgi, 3d, render, sketch, cartoon, drawing, anime:1.4), text, close up, cropped, out of frame, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, poorly drawn face, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck"
+  #   prompt: ???
 
 
   prompt_processor_type_add: "stable-diffusion-prompt-processor"
