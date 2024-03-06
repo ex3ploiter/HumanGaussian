@@ -238,7 +238,7 @@ class GaussianDreamer(BaseLift3DSystem):
             
         images = []
         depths = []
-        pose_images = []
+        # pose_images = []
         self.viewspace_point_list = []
 
         for id in range(batch['c2w'].shape[0]):
@@ -265,26 +265,26 @@ class GaussianDreamer(BaseLift3DSystem):
             images.append(image)
             depths.append(depth)
 
-            if self.texture_structure_joint:
-                backview = abs(batch['azimuth'][id]) > 120 * np.pi / 180
-                mvp = batch['mvp_mtx'][id].detach().cpu().numpy()  # [4, 4]
-                pose_image, _ = self.skel.humansd_draw(mvp, 512, 512, backview) # [512, 512, 3], fixed pose image resolution
-                # kiui.vis.plot_image(pose_image)
-                pose_image = torch.from_numpy(pose_image).to(self.device) # [H, W, 3]
-                pose_images.append(pose_image)
-            else:
-                # render pose image
-                backview = abs(batch['azimuth'][id]) > 120 * np.pi / 180
-                mvp = batch['mvp_mtx'][id].detach().cpu().numpy()  # [4, 4]
-                pose_image, _ = self.skel.draw(mvp, 512, 512, backview) # [512, 512, 3], fixed pose image resolution
-                # kiui.vis.plot_image(pose_image)
-                pose_image = torch.from_numpy(pose_image).to(self.device) # [H, W, 3]
-                pose_images.append(pose_image)
+            # if self.texture_structure_joint:
+            #     backview = abs(batch['azimuth'][id]) > 120 * np.pi / 180
+            #     mvp = batch['mvp_mtx'][id].detach().cpu().numpy()  # [4, 4]
+            #     pose_image, _ = self.skel.humansd_draw(mvp, 512, 512, backview) # [512, 512, 3], fixed pose image resolution
+            #     # kiui.vis.plot_image(pose_image)
+            #     pose_image = torch.from_numpy(pose_image).to(self.device) # [H, W, 3]
+            #     pose_images.append(pose_image)
+            # else:
+            #     # render pose image
+            #     backview = abs(batch['azimuth'][id]) > 120 * np.pi / 180
+            #     mvp = batch['mvp_mtx'][id].detach().cpu().numpy()  # [4, 4]
+            #     pose_image, _ = self.skel.draw(mvp, 512, 512, backview) # [512, 512, 3], fixed pose image resolution
+            #     # kiui.vis.plot_image(pose_image)
+            #     pose_image = torch.from_numpy(pose_image).to(self.device) # [H, W, 3]
+            #     pose_images.append(pose_image)
 
 
         images = torch.stack(images, 0)
         depths = torch.stack(depths, 0)
-        pose_images = torch.stack(pose_images, 0)
+        # pose_images = torch.stack(pose_images, 0)
 
         self.visibility_filter = self.radii > 0.0
 
@@ -298,7 +298,7 @@ class GaussianDreamer(BaseLift3DSystem):
 
         render_pkg["comp_rgb"] = images
         render_pkg["depth"] = depths
-        render_pkg['pose'] = pose_images
+        # render_pkg['pose'] = pose_images
         render_pkg["opacity"] = depths / (depths.max() + 1e-5)
 
         return {
@@ -312,6 +312,19 @@ class GaussianDreamer(BaseLift3DSystem):
             self.cfg.prompt_processor
         )
         self.guidance = threestudio.find(self.cfg.guidance_type)(self.cfg.guidance)
+        
+        
+        
+        self.prompt_processor_add = None
+        self.guidance_add = None
+        if len(self.cfg.prompt_processor_type_add) > 0:
+            self.prompt_processor_add = threestudio.find(self.cfg.prompt_processor_type_add)(
+                self.cfg.prompt_processor_add
+            )
+        
+        if len(self.cfg.guidance_type_add) > 0:
+            self.guidance_add = threestudio.find(self.cfg.guidance_type_add)(self.cfg.guidance_add)
+        
     
     def training_step(self, batch, batch_idx):
 
@@ -324,37 +337,48 @@ class GaussianDreamer(BaseLift3DSystem):
 
         out = self(batch) 
 
-        prompt_utils = self.prompt_processor()
+        # prompt_utils = self.prompt_processor()
+        prompt_utils = self.prompt_processor_add()
+        
+        
         images = out["comp_rgb"]
         depth_images = out['depth']
         depth_min = torch.amin(depth_images, dim=[1, 2, 3], keepdim=True)
         depth_max = torch.amax(depth_images, dim=[1, 2, 3], keepdim=True)
         depth_images = (depth_images - depth_min) / (depth_max - depth_min + 1e-10)# to [0, 1]
         depth_images = depth_images.repeat(1, 1, 1, 3)# to 3-channel
-        control_images = out['pose']
+        # control_images = out['pose']
 
         # guidance_eval = (self.true_global_step % 200 == 0)
         guidance_eval = False
         
-        if self.texture_structure_joint:
-            guidance_out = self.guidance(
-                control_images, images, depth_images, prompt_utils, **batch, 
-                rgb_as_latents=False, guidance_eval=guidance_eval
-            )
-        elif self.controlnet:
-            guidance_out = self.guidance(
-                control_images, images, prompt_utils, **batch, 
-                rgb_as_latents=False, guidance_eval=guidance_eval
-            )
-        else:
-            guidance_out = self.guidance(
-                images, prompt_utils, **batch, 
-                rgb_as_latents=False, guidance_eval=guidance_eval
-            )
+        
+        guidance_out_add = self.guidance_add(
+                    depth_images, prompt_utils, **batch
+                )
+        
+        
+        # if self.texture_structure_joint:
+        #     guidance_out = self.guidance(
+        #         control_images, images, depth_images, prompt_utils, **batch, 
+        #         rgb_as_latents=False, guidance_eval=guidance_eval
+        #     )
+        # elif self.controlnet:
+        #     guidance_out = self.guidance(
+        #         control_images, images, prompt_utils, **batch, 
+        #         rgb_as_latents=False, guidance_eval=guidance_eval
+        #     )
+        # else:
+        #     guidance_out = self.guidance(
+        #         images, prompt_utils, **batch, 
+        #         rgb_as_latents=False, guidance_eval=guidance_eval
+        #     )
 
         loss = 0.0
+        
+        loss+= self.C(self.cfg.loss['lambda_sds_add'])*guidance_out_add["loss_sds"]
 
-        loss = loss + guidance_out['loss_sds'] *self.C(self.cfg.loss['lambda_sds'])
+        # loss = loss + guidance_out['loss_sds'] *self.C(self.cfg.loss['lambda_sds'])
         
         loss_sparsity = (out["opacity"] ** 2 + 0.01).sqrt().mean()
         self.log("train/loss_sparsity", loss_sparsity)

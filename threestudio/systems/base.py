@@ -205,8 +205,14 @@ class BaseLift3DSystem(BaseSystem):
         guidance_type: str = ""
         guidance: dict = field(default_factory=dict)
 
+        guidance_type_add: str = ""
+        guidance_add: dict = field(default_factory=dict)
+
         prompt_processor_type: str = ""
         prompt_processor: dict = field(default_factory=dict)
+
+        prompt_processor_type_add: str = ""
+        prompt_processor_add: dict = field(default_factory=dict)
 
         # geometry export configurations, no need to specify in training
         exporter_type: str = "mesh-exporter"
