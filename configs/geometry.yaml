@@ -1,6 +1,6 @@
 name: "name-of-this-experiment-run"
 tag: "${rmspace:${system.prompt_processor.prompt},_}"
-exp_root_dir: "/save/experiments/"
+exp_root_dir: "./save/experiments/"
 seed: 0
  
 data_type: "random-camera-datamodule"
@@ -68,7 +68,7 @@ system:
     back_threshold: 45.
     human_part_prompt: true
 
-    
+
   guidance_type: "dual-branch-guidance"
   guidance:
     pretrained_model_name_or_path: "stabilityai/stable-diffusion-2-base"
