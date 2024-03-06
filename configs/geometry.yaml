@@ -62,7 +62,7 @@ system:
   guidance_type: "dual-branch-guidance"
   guidance:
     pretrained_model_name_or_path: "stabilityai/stable-diffusion-2-base"
-    model_key: "/path/to/pretrained/texture-structure_joint_model"
+    model_key: "/content/HumanGaussian/texture_structure_joint"
     vae_key: "stabilityai/sd-vae-ft-mse"
     guidance_scale: 7.5
     weighting_strategy: sds
